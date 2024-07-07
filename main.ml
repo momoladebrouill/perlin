@@ -1,14 +1,14 @@
 open Raylib
 
-let n = 3
-let squaresize = 2
+let n = 10
+let squaresize = 1
 (*pixel per case*)
 let ppc = 50
 type vector = float * float
 
 let grads = Array.init (n+1) 
 	(fun _ -> Array.init (n+1) 
-		(fun _ -> (Random.float 0.5, Random.float  0.5))
+		(fun _ -> (Random.float 1.0, Random.float  1.0))
 	)
 
 let print_vec (a,b) = Printf.printf "(%0.2f, %0.2f)\n" a b
@@ -30,39 +30,41 @@ let f t =
 
 (* polynôme obtenu manuellement en voulant des dérivées nulles au bord 
 et atteindre les valeurs aussi au bord *)
-let f x = 
-	3.0 *. x **2.0  -. 2.0 *. x**3.0
+let f t = 
+	3.0 *. t**2.0  -. 2.0 *. t**3.0
 let inter u v t =
-	u +. (v-.u)*. f t
+	u +. (v-.u) *. f t
 
 let perlin (x,y) =
-	let i,j = x |> floor |> int_of_float  , y |> floor |> int_of_float in
+	let i,j = x |> floor |> int_of_float, y |> floor |> int_of_float in
 	(*Printf.printf "%d %d\n" i j ;*)
 	let pos = x -. floor x, y -. floor y in
 	let infl = 
-	[| ps grads.(i).(j) (pos -$ (0.0,0.0)); ps grads.(i+1).(j) (pos -$ (0.0,1.0));
-		ps grads.(i).(j+1) (pos -$ (1.0,0.0)); ps grads.(i+1).(j+1) (pos -$ (1.0,1.0))
+	[| ps grads.(i).(j) pos; ps grads.(i+1).(j) (pos -$ (1.0,0.0));
+		ps grads.(i).(j+1) (pos -$ (0.0,1.0)); ps grads.(i+1).(j+1) (pos -$ (1.0,1.0))
 	|]
 	in
 	let u,v = pos in
 	let xtop = inter infl.(0) infl.(1) u in
 	let xbot = inter infl.(2) infl.(3) u in
-	inter xtop xtop v
+	inter xtop xbot v
 
 
 let iof = int_of_float 
 let foi = float_of_int
-let  loop () = 
+let  rec loop () = 
 	if window_should_close () then close_window ()
 	else begin
 		begin_drawing ();
-		clear_background Color.black;
+		(*clear_background Color.black;*)
+		for k = 0 to 1 do
 		for i = 0 to ppc*(n-1) do
 			for j = 0 to ppc*(n-1) do
 				let v = perlin (foi i /. foi ppc, foi j /. foi ppc) in 
 				draw_rectangle (i*squaresize) (j*squaresize) squaresize squaresize 
-					(color_from_hsv (v*.360.0) 7.0 1.0)
+					(color_from_hsv (v*.360.0) 0.7 1.0)
 			done
+		done
 		done;
 		take_screenshot "result.png";
 		end_drawing ();

@@ -1,1 +1,2 @@
-/bin/bash: ligne 1: q : commande introuvable
+_build/*
+_build/
