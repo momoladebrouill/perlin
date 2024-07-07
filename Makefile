@@ -1,5 +1,5 @@
 
 all:
-	dune build --profile release
+	dune build
 	./_build/default/main.exe
 	kitten icat result.png
