@@ -1,35 +1,37 @@
 open Raylib
 
 (* nombre de points d'accroche en hauteur et largeur*)
-let n = 10
+let n = 50
 
 (* taille d'un pixel *)
 let squaresize = 1
 
 (*pixel per case*)
-let ppc = 100
+let ppc = 10
 
+let augm = 2.0
+
+let (-$) (a,b) (c,d) = (a -. c, b -. d)
+let ( *$) q (a,b) = (q*.a, q*.b)
+let ps (a,b) (x,y) = a *. x +. b *. y
 
 (* tableau des gradiants*)
 let grads = 
 	Random.self_init ();
 	Array.init (n+1) 
 	(fun _ -> Array.init (n+1) 
-		(fun _ -> (Random.float 1.0, Random.float  1.0))
+		(fun _ -> augm *$ (Random.float 2.0 -. 1.0, Random.float  2.0 -. 1.0))
 	)
 
-let (-$) (a,b) (c,d) = (a -. c, b -. d)
-let ps (a,b) (x,y) = a *. x +. b *. y
 
 
 
 (*polynôme recommandé*)
 (*6t5-15t4+10t3*)
-(*let f t = 6.0 *. t**5.0 -. 15.0*.t**4.0 +. 10.0 *. t **3.0*)
-
-(* polynôme obtenu manuellement en voulant des dérivées nulles au bord 
-et atteindre les valeurs aussi au bord *)
-let f t = 3.0 *. t**2.0  -. 2.0 *. t**3.0
+let f t =(* 
+	(6.0 *. t**2.0 -. 15.0*.t +. 10.0) *. t**3.0*)
+	(* polynôme obtenu manuellement en voulant des dérivées nulles au bord  et atteindre les valeurs aussi au bord *)
+	3.0 *. t**2.0  -. 2.0 *. t**3.0
 
 
 let inter u v t = u +. (v-.u) *. f t 
@@ -47,7 +49,8 @@ let perlin (x,y) =
 	let u,v = pos in
 	let xtop = inter infl.(0) infl.(1) u in
 	let xbot = inter infl.(2) infl.(3) u in
-	(1.0 +. inter xtop xbot v *. 3.0)/.2.0 
+	let ret = inter xtop xbot v /. augm in
+	(1.0 +. ret)/.2.0 
 
 let foi = float_of_int
 let loop () = 
@@ -64,7 +67,7 @@ let loop () =
 				if v <= !mini then mini := v;
 				if v >= !maxi then maxi := v;
 				draw_rectangle (i*squaresize) (j*squaresize) squaresize squaresize 
-					(color_from_hsv (v*.360.0) 0.7 0.7)
+					(color_from_hsv (360.0) 1.0 v)
 			done
 		done
 		done;
